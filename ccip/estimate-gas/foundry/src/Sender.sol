@@ -78,8 +78,7 @@ contract Sender is OwnerIsCreator {
     function sendMessagePayLINK(
         uint64 _destinationChainSelector,
         address _receiver,
-        uint256 _iterations,
-        uint256 _gasLimit
+        uint256 _iterations
     )
         external
         onlyOwner
@@ -87,6 +86,8 @@ contract Sender is OwnerIsCreator {
         validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
+        uint256 adjustedGasLimit = 26_509; // The new gas limit based on test results (24099) with 10% increase.
+
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
         Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
             receiver: abi.encode(_receiver), // ABI-encoded receiver address
@@ -94,7 +95,7 @@ contract Sender is OwnerIsCreator {
             tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array as no tokens are transferred
             extraArgs: Client._argsToBytes(
                 // Additional arguments, setting gas limit
-                Client.EVMExtraArgsV1({gasLimit: _gasLimit})
+                Client.EVMExtraArgsV1({gasLimit: adjustedGasLimit})
             ),
             // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
             feeToken: address(s_linkToken)
@@ -108,7 +109,7 @@ contract Sender is OwnerIsCreator {
 
         s_linkToken.safeTransferFrom(msg.sender, address(this), fees); // Transfer the fees to the contract
 
-        // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
+        // Approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
         s_linkToken.approve(address(router), fees);
 
         // Send the CCIP message through the router and store the returned CCIP message ID

@@ -37,12 +37,7 @@ contract SenderReceiverTest is Test {
     /// @param iterations The variable to simulate varying loads in the message.
     function sendMessage(uint256 iterations) private {
         vm.recordLogs(); // Starts recording logs to capture events.
-        sender.sendMessagePayLINK(
-            chainSelector,
-            address(receiver),
-            iterations,
-            400000 // A predefined gas limit for the transaction.
-        );
+        sender.sendMessagePayLINK(chainSelector, address(receiver), iterations);
         // Fetches recorded logs to check for specific events and their outcomes.
         Vm.Log[] memory logs = vm.getRecordedLogs();
         bytes32 msgExecutedSignature = keccak256(
